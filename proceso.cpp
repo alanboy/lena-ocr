@@ -43,10 +43,11 @@ bool proceso::procesarImagen( frame &f )
         Aqui se realiza el proceso a la imagen
     */
     f.mostrarImagen( "Original" );
-	frame test( f.imagen() );
-	GaussianBlur( f.imagen(), test.imagen(), Size( 3, 3 ), 3 );
-	test.mostrarImagen( "Blurred" );
-	f = frame( test.imagen() );
+    frame test( f.imagen() );
+    GaussianBlur( f.imagen(), test.imagen(), Size( 3, 3 ), 3 );
+    if( DEBUG )
+        test.mostrarImagen( "Blurred" );
+    f = frame( test.imagen() );
     /*
         Eliminar ruido
 
@@ -134,10 +135,15 @@ bool proceso::procesarImagen( frame &f )
         idea_label.mostrarImagen( "Idea labeled" );
 
     anded = idea_label & refined;
-    anded.mostrarImagen( "Anded" );
+    if( DEBUG )
+        anded.mostrarImagen( "Anded" );
 
     anded_short = idea_label & short_ed_bw_90;
-    anded_short.mostrarImagen( "Anded short" );
+    if( DEBUG )
+        anded_short.mostrarImagen( "Anded short" );
+
+    anded.drawTextHull( f );
+    f.mostrarImagen( "Resultado" );
     /*
         Fin punto A.
     */

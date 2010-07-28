@@ -191,3 +191,28 @@ frame frame::removeNoise()
         }
     return res;
 }
+
+void frame::drawTextHull( frame &a )
+{
+    frame out;
+
+    morphologyEx( imagen(), out.imagen(), MORPH_CLOSE, getStructuringElement( MORPH_RECT, Size( 10, 1 ) ) );
+    out.mostrarImagen( "Out" );
+    out = out.labeling( 70, 99999 );
+
+    std::vector< std::vector< Point > > contours;
+    std::vector< Vec4i > hierarchy;
+    findContours( out.imagen(), contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
+
+    std::cerr << "Se encontraron " << contours.size() << " regiones de texto" << std::endl;
+
+    std::vector< Point > hull;
+    for( int i = 0, sz = contours.size(); i < sz; ++i )
+    {
+        hull.clear();
+        convexHull( Mat( contours[ i ] ), hull );
+        for( int j = 1, sh = hull.size(); j < sh; ++j )
+            line( a.imagen(), hull[ j - 1 ], hull[ j ], CV_RGB( 0xff, 0x0, 0x0 ), 2 );
+        line( a.imagen(), hull[ 0 ], hull[ hull.size() - 1 ], CV_RGB( 0xff, 0x0, 0x0 ), 2 );
+    }
+}

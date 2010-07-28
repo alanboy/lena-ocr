@@ -95,6 +95,12 @@ class frame
         */
         frame removeNoise();
 
+        /**
+        *   Escribe un cuadro en la imagen en las areas donde
+        *   se cree que hay texto.
+        */
+        void drawTextHull( frame & );
+
     private:
 
         Mat imagen_;
