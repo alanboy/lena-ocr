@@ -43,6 +43,10 @@ bool proceso::procesarImagen( frame &f )
         Aqui se realiza el proceso a la imagen
     */
     f.mostrarImagen( "Original" );
+	frame test( f.imagen() );
+	GaussianBlur( f.imagen(), test.imagen(), Size( 3, 3 ), 3 );
+	test.mostrarImagen( "Blurred" );
+	f = frame( test.imagen() );
     /*
         Eliminar ruido
 
@@ -62,8 +66,8 @@ bool proceso::procesarImagen( frame &f )
 
     frame edge_strong_90bw;
     threshold( E[ 2 ].imagen(), edge_strong_90bw.imagen(), 20.0, 0xFF, THRESH_BINARY | THRESH_OTSU );
-    //if( DEBUG )
-    edge_strong_90bw.mostrarImagen( "Edge strong 90 bw" );
+    if( DEBUG )
+	    edge_strong_90bw.mostrarImagen( "Edge strong 90 bw" );
 
     frame dilated;
     dilate( edge_strong_90bw.imagen(), dilated.imagen(), getStructuringElement( MORPH_RECT, Size( 2, 3 ) ) );
