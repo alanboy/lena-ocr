@@ -1,11 +1,10 @@
 #include "frame.h"
 
 /**
-*   Para el flood fill.
-*   4-connected component.
+*   Para revisar los 8 vecinos mas rapidamente.
 */
-const int X[] = { 1, 0, -1, 0 };
-const int Y[] = { 0, 1, 0, -1 };
+const int X[] = { 1, 1, 1, -1, -1, -1, 0, 0 };
+const int Y[] = { 1, 0, -1, 1, 0, -1, 1, -1 };
 
 frame::frame()
 {
@@ -51,17 +50,6 @@ bool frame::convolucion( double K[ 9 ] )
     return true;
 }
 
-bool frame::revisarROI( int a, int b, int c, int d )
-{
-    if( imagen_.empty() )
-        return false;
-    Mat src = imagen_.clone();
-    src = src.adjustROI( a, b, c, d );
-    Mat bw( src.size(), CV_8UC1 );
-    cvtColor( src, bw, CV_RGB2GRAY );
-    return true;
-}
-
 bool frame::valido()
 {
     return imagen_.empty();
@@ -77,9 +65,19 @@ unsigned char frame::dataAt( int x, int y ) const
     return imagen_.at< unsigned char >( x, y );
 }
 
+float frame::fDataAt( int x, int y ) const
+{
+    return imagen_.at< float >( x, y );
+}
+
 void frame::setData( int x, int y, unsigned char d )
 {
     imagen_.at< unsigned char >( x, y ) = d;
+}
+
+void frame::fSetData( int x, int y, float d )
+{
+    imagen_.at< float >( x, y ) = d;
 }
 
 Size frame::imageSize()
@@ -118,50 +116,6 @@ frame frame::operator&( const frame &a )
             res.setData( i, j, data );
         }
     return res;
-}
-
-frame frame::hit_and_miss( const Mat &kernel )
-{
-    int w = imageSize().width, h = imageSize().height;
-    int kw = kernel.size().width, kh = kernel.size().height;
-    int cx = -1, cy = -1; /* para un kernel 3x3, es el centro */
-    frame res( Mat( imageSize(), CV_8UC1 ) ); /* soporta solo un canal y de 8 bits */
-    bool valor;
-    for( int i = 0; i < h; ++i )
-        for( int j = 0; j < w; ++j )
-        {
-            valor = true;
-            for( int k = 0; k < kh; ++k )
-                for( int l = 0; l < kw; ++l )
-                    /* solo los elementos validos */
-                    if( i + k + cx >= 0 && i + k + cx < h && j + l + cy >= 0 && j + l + cy < w )
-                    {
-                        if( kernel.at< unsigned char >( k, l ) == 0xff ) /* prendido */
-                        {
-                            valor = valor && res.dataAt( i + k + cx, j + l +cy ) == 0xff;
-                        }
-                        else if( kernel.at< unsigned char >( k, l ) == 0x00 ) /* apagado */
-                        {
-                            valor = valor && res.dataAt( i + k + cx, j + l +cy ) == 0x00;
-                        }
-                    }
-            if( valor )
-                res.setData( i, j, 0xff );
-            else
-                res.setData( i, j, 0x00 );
-        }
-    return res;
-}
-
-void frame::rotar( Mat &img )
-{
-    unsigned char M[ 3 ][ 3 ];
-    for( int i = 0; i < 3; ++i )
-        for( int j = 0; j < 3; ++j )
-            M[ i ][ j ] = img.at< unsigned char >( i, j );
-    for( int i = 0; i < 3; ++i )
-        for( int j = 0; j < 3; ++j )
-            img.at< unsigned char >( j, i ) = M[ i ][ j ];
 }
 
 frame frame::thinning( int level )
@@ -210,4 +164,30 @@ frame frame::labeling( int min, int max )
     tresh = Mat::zeros( tresh.size(), CV_8UC1 );
     drawContours( tresh, contours, -1, Scalar( 0xff ), CV_FILLED );
     return frame( tresh );
+}
+
+frame frame::removeNoise()
+{
+    int w = imageSize().width, h = imageSize().height;
+    frame res( Mat( imageSize(), CV_8UC1 ) );
+    int promedio, suma, vecinos;
+    for( int i = 0; i < h; ++i )
+        for( int j = 0; j < w; ++j )
+        {
+            promedio = suma = vecinos = 0;
+            for( int k = 0; k < 8; ++k )
+                if( i + X[ k ] >= 0 && i + X[ k ] < h && j + Y[ k ] >= 0 && j + Y[ k ] < w )
+                {
+                    ++vecinos;
+                    suma += dataAt( i + X[ k ], j + Y[ k ] );
+                }
+                promedio = ( int )ceil( suma / ( double )vecinos );
+            if( dataAt( i, j ) == 0xff && promedio < 80 )
+                res.setData( i, j, 0x0 );
+            else if( dataAt( i, j ) == 0xff )
+                res.setData( i, j, 0xff );
+            else
+                res.setData( i, j, 0x0 );
+        }
+    return res;
 }

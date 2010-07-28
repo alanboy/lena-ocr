@@ -31,6 +31,7 @@ class video
 
         bool RECORD, PROCESAR;
         int BORDE;
+
 };
 
 #endif

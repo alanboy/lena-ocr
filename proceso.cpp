@@ -44,6 +44,11 @@ bool proceso::procesarImagen( frame &f )
     */
     f.mostrarImagen( "Original" );
     /*
+        Eliminar ruido
+
+        frame noiseless = f.removeNoise();
+        noiseless.mostrarImagen( "Sin ruido" );*/
+    /*
         Punto A.
     */
     frame E[ 4 ];
@@ -57,8 +62,8 @@ bool proceso::procesarImagen( frame &f )
 
     frame edge_strong_90bw;
     threshold( E[ 2 ].imagen(), edge_strong_90bw.imagen(), 20.0, 0xFF, THRESH_BINARY | THRESH_OTSU );
-    if( DEBUG )
-        edge_strong_90bw.mostrarImagen( "Edge strong 90 bw" );
+    //if( DEBUG )
+    edge_strong_90bw.mostrarImagen( "Edge strong 90 bw" );
 
     frame dilated;
     dilate( edge_strong_90bw.imagen(), dilated.imagen(), getStructuringElement( MORPH_RECT, Size( 2, 3 ) ) );
@@ -120,7 +125,7 @@ bool proceso::procesarImagen( frame &f )
     if( DEBUG )
         idea.mostrarImagen( "Idea" );
 
-    idea_label = idea.labeling( 50, 999999 );
+    idea_label = idea.labeling( 30, 999999 );
     if( DEBUG )
         idea_label.mostrarImagen( "Idea labeled" );
 
@@ -130,7 +135,7 @@ bool proceso::procesarImagen( frame &f )
     anded_short = idea_label & short_ed_bw_90;
     anded_short.mostrarImagen( "Anded short" );
     /*
-    Fin punto A.
+        Fin punto A.
     */
 
     return true;
@@ -146,71 +151,6 @@ void proceso::convolucion( frame &f, frame *conv )
     {
         conv[ i ] = frame( bw );
         conv[ i ].convolucion( kernel[ i ] );
-    }
-}
-
-void proceso::encontrarContornos( frame &f, frame &canny, frame &fpuntos, bool opt )
-{
-    std::vector< std::vector< Point > > contours;
-    findContours( canny.imagen(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
-
-    canny.imagen().zeros( canny.imageSize(), canny.tipo() );
-
-    for( int i = 0, Nc = contours.size(); i < Nc; ++i )
-    {
-        int maxX = -1, maxY = -1, minX = 1000, minY = 1000;
-        for( int j = 0, s = contours[ i ].size(); j < s; ++j )
-        {
-            if( contours[ i ][ j ].x > maxX )
-                maxX = contours[ i ][ j ].x;
-            if( contours[ i ][ j ].y > maxY )
-                maxY = contours[ i ][ j ].y;
-            if( contours[ i ][ j ].x < minX )
-                minX = contours[ i ][ j ].x;
-            if( contours[ i ][ j ].y < minY )
-                minY = contours[ i ][ j ].y;
-        }
-        if( opt )
-            envoltorio( f, canny, fpuntos, contours[ i ], maxX, maxY, minX, minY );
-        else if( !( ( maxX - minX ) >= ( canny.imageSize().width - 10 ) ) )
-            for( int j = 0, s = contours[ i ].size(); j < s ; ++j )
-                line( canny.imagen(), contours[ i ][ j - 1 < 0 ? ( s - 1 ):( j - 1 ) ], contours[ i ][ j ], Scalar( 255, 255, 255 ), 2, CV_AA );
-    }
-
-    contours.clear();
-}
-
-void proceso::envoltorio( frame &f, frame &canny, frame &fpuntos, std::vector< Point > &contour, int maxX, int maxY, int minX, int minY )
-{
-    Size fs = f.imageSize(), size;
-    Point off;
-    int croi, puntos;
-    double puntos_area;
-    char bufferTexto[ 15 ];
-    if( !( ( ( maxX - minX ) > ( fs.width * 0.8 ) ) || ( ( maxY - minY ) > ( fs.height * 0.8 ) ) ) )
-    {
-        if( ( maxX - minX ) < 50 )
-            return;
-        rectangle( f.imagen(), Point( minX, minY ), Point( maxX, maxY ), Scalar( 0, 0, 255 ), 2 );
-        puntos = 0;
-        for( int x = minX; x <= maxX; ++x )
-            for( int y = minY; y <= maxY; ++y )
-                if( fpuntos.dataAt( x, y ) > 20 )
-                    ++puntos;
-                puntos_area = ( ( ( double )puntos ) / ( ( double )( ( maxX - minX ) * ( maxY - minY ) ) ) ) * 100.0;
-            if( puntos_area < 2.0 )
-                return;
-            croi = f.revisarROI( minX, minY, maxX - minX, maxY - minY );
-        f.imagen().locateROI( size, off );
-        f.imagen().adjustROI( off.y, size.height - ( off.y + fs.height ), off.x, size.width - ( off.x + fs.width ) );
-        if( !croi )
-            return;
-        sprintf( bufferTexto, "%lf", puntos_area );
-        std::vector< Point > hull;
-        Mat points( contour );
-        convexHull( points, hull, true );
-        for( int j = 0, s = hull.size(); j < s; ++j )
-            line( f.imagen(), hull[ ( j - 1 < 0 ? ( s - 1 ) : ( j - 1 ) ) ], hull[ j ], Scalar( 255, 255, 0 ), 1, CV_AA );
     }
 }
 
@@ -237,8 +177,8 @@ bool proceso::procesarVideo( char *path, char *save )
                 else if( c == 'q' )
                     return true;
             }
-            else if( c == 'q' )
-                return true;
+        else if( c == 'q' )
+            return true;
     }
     return true;
 }

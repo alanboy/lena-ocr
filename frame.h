@@ -39,13 +39,6 @@ class frame
         bool convolucion( double [ 9 ] );
 
         /**
-        *   Hace un ajuste del area de interes
-        *   de la imagen.
-        *   Por el momento esta funcion no hace nada.
-        */
-        bool revisarROI( int, int, int, int );
-
-        /**
         *   retorna imagen_.empty();
         */
         bool valido();
@@ -55,8 +48,10 @@ class frame
         *   la matriz en esa posicion.
         */
         unsigned char dataAt( int, int ) const;
+        float fDataAt( int, int ) const;
 
         void setData( int, int, unsigned char );
+        void fSetData( int, int, float );
 
         /**
         *   Retorna el tamano de la imagen.
@@ -93,20 +88,14 @@ class frame
         */
         frame labeling( int, int );
 
+        /**
+        *   Revisa la imagen para tratar de remover
+        *   el ruido que puede afectar el procesamiento
+        *   de la imagen.
+        */
+        frame removeNoise();
+
     private:
-
-        /**
-        *   operador hit-and-miss
-        *   Se usa el centro del kernel.
-        *   El kernel contiene 0x0, 0x66 y 0xff.
-        *   0x66 es un punto que carece de interes.
-        */
-        frame hit_and_miss( const Mat & );
-
-        /**
-        *   Rotar un objeto Mat 90 grados.
-        */
-        void rotar( Mat & );
 
         Mat imagen_;
 

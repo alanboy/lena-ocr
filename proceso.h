@@ -35,10 +35,6 @@ class proceso
 
         void convolucion( frame &, frame * );
 
-        void encontrarContornos( frame &, frame &, frame &, bool opt = false );
-
-        void envoltorio( frame &, frame &, frame &, std::vector< Point > &, int, int, int, int );
-
         video captura;
 
         double kernel[ 4 ][ 9 ];
