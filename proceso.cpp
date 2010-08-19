@@ -43,16 +43,6 @@ bool proceso::procesarImagen( frame &f )
         Aqui se realiza el proceso a la imagen
     */
     f.mostrarImagen( "Original" );
-    frame test( f.imagen() );
-    GaussianBlur( f.imagen(), test.imagen(), Size( 3, 3 ), 3 );
-    if( DEBUG )
-        test.mostrarImagen( "Blurred" );
-    f = frame( test.imagen() );
-    /*
-        Eliminar ruido
-
-        frame noiseless = f.removeNoise();
-        noiseless.mostrarImagen( "Sin ruido" );*/
     /*
         Punto A.
     */
@@ -108,7 +98,7 @@ bool proceso::procesarImagen( frame &f )
     if( DEBUG )
         thinned.mostrarImagen( "Thinned" );
     frame short_ed_bw_90 = edge_bw_90.labeling( 15, 70 );
-    if( DEBUG )
+    //if( DEBUG )
         short_ed_bw_90.mostrarImagen( "Short edges" );
 
     frame candidate;
@@ -122,15 +112,16 @@ bool proceso::procesarImagen( frame &f )
     add( sums.imagen(), E[ 2 ].imagen(), sums.imagen() );
     add( sums.imagen(), E[ 3 ].imagen(), sums.imagen() );
     frame refined( candidate.imagen().mul( sums.imagen() ) );
-    if( DEBUG )
+    //if( DEBUG )
         refined.mostrarImagen( "Refinada" );
 
-    frame idea, idea_label, anded, anded_short;
+    /**/
+    /*frame idea, idea_label, anded, anded_short;
     morphologyEx( refined.imagen(), idea.imagen(), MORPH_CLOSE, getStructuringElement( MORPH_RECT, Size( 10, 1 ) ) );
     if( DEBUG )
         idea.mostrarImagen( "Idea" );
 
-    idea_label = idea.labeling( 30, 999999 );
+    idea_label = idea.labeling( 3, 999999 );
     if( DEBUG )
         idea_label.mostrarImagen( "Idea labeled" );
 
@@ -143,12 +134,17 @@ bool proceso::procesarImagen( frame &f )
         anded_short.mostrarImagen( "Anded short" );
 
     anded.drawTextHull( f );
-    f.mostrarImagen( "Resultado" );
+    f.mostrarImagen( "Resultado" );*/
     /*
         Fin punto A.
     */
 
     return true;
+}
+
+int proceso::weight( frame &f, int i, int j )
+{
+    return 0;
 }
 
 void proceso::convolucion( frame &f, frame *conv )

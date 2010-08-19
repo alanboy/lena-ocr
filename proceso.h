@@ -35,6 +35,8 @@ class proceso
 
         void convolucion( frame &, frame * );
 
+        int weight( frame &, int, int );
+
         video captura;
 
         double kernel[ 4 ][ 9 ];
