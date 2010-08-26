@@ -112,8 +112,24 @@ bool proceso::procesarImagen( frame &f )
     add( sums.imagen(), E[ 2 ].imagen(), sums.imagen() );
     add( sums.imagen(), E[ 3 ].imagen(), sums.imagen() );
     frame refined( candidate.imagen().mul( sums.imagen() ) );
-    //if( DEBUG )
+    if( DEBUG )
         refined.mostrarImagen( "Refinada" );
+
+    frame fmap( refined.imagen() );
+    int c = 1; /* window size */
+    for( int i = 0, h = refined.imageSize().height; i < h; ++i )
+        for( int j = 0, w = refined.imageSize().width; j < w; ++j )
+        {
+            unsigned int suma = 0;
+            for( int m = -c; m <= c; ++m )
+                for( int n = -c; n <= c; ++n )
+                    if( i + m >= 0 && i + m < h && j + n >= 0 && j + n < w )
+                        suma += refined.dataAt( i + m, j + n );
+            suma *= weight( refined, i, j );
+            suma = suma / 36;
+            fmap.setData( i, j, suma );
+        }
+    fmap.mostrarImagen( "fmap" );
 
     /**/
     /*frame idea, idea_label, anded, anded_short;
@@ -142,9 +158,22 @@ bool proceso::procesarImagen( frame &f )
     return true;
 }
 
-int proceso::weight( frame &f, int i, int j )
+int proceso::weight( frame &f, int j, int i )
 {
-    return 0;
+    int w = 0, wl = f.imageSize().width, hl = f.imageSize().height;
+    if( i < 0 || i >= w || j < 0 || j >= hl )
+        return 0;
+    if( f.dataAt( i, j ) != 0xff )
+        return 0;
+    if( i > 0 && i + 1 < wl && f.dataAt( i - 1, j ) == 0xff && f.dataAt( i + 1, j ) == 0xff )
+        ++w;
+    if( j > 0 && j + 1 < hl && f.dataAt( i, j - 1 ) == 0xff && f.dataAt( i, j + 1 ) == 0xff )
+        ++w;
+    if( i > 0 && i + 1 < wl && j + 1 < hl && j > 0 && f.dataAt( i - 1, j + 1 ) == 0xff && f.dataAt( i + 1, j - 1 ) == 0xff )
+        ++w;
+    if( i > 0 && i + 1 < wl && j + 1 < hl && j > 0 && f.dataAt( i - 1, j - 1 ) == 0xff && f.dataAt( i + 1, j + 1 ) == 0xff )
+        ++w;
+    return w;
 }
 
 void proceso::convolucion( frame &f, frame *conv )

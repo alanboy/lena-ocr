@@ -48,10 +48,8 @@ class frame
         *   la matriz en esa posicion.
         */
         unsigned char dataAt( int, int ) const;
-        float fDataAt( int, int ) const;
 
         void setData( int, int, unsigned char );
-        void fSetData( int, int, float );
 
         /**
         *   Retorna el tamano de la imagen.
@@ -87,13 +85,6 @@ class frame
         *   frame.
         */
         frame labeling( int, int );
-
-        /**
-        *   Revisa la imagen para tratar de remover
-        *   el ruido que puede afectar el procesamiento
-        *   de la imagen.
-        */
-        frame removeNoise();
 
         /**
         *   Escribe un cuadro en la imagen en las areas donde

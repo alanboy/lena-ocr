@@ -65,19 +65,9 @@ unsigned char frame::dataAt( int x, int y ) const
     return imagen_.at< unsigned char >( x, y );
 }
 
-float frame::fDataAt( int x, int y ) const
-{
-    return imagen_.at< float >( x, y );
-}
-
 void frame::setData( int x, int y, unsigned char d )
 {
     imagen_.at< unsigned char >( x, y ) = d;
-}
-
-void frame::fSetData( int x, int y, float d )
-{
-    imagen_.at< float >( x, y ) = d;
 }
 
 Size frame::imageSize()
@@ -164,32 +154,6 @@ frame frame::labeling( int min, int max )
     tresh = Mat::zeros( tresh.size(), CV_8UC1 );
     drawContours( tresh, contours, -1, Scalar( 0xff ), CV_FILLED );
     return frame( tresh );
-}
-
-frame frame::removeNoise()
-{
-    int w = imageSize().width, h = imageSize().height;
-    frame res( Mat( imageSize(), CV_8UC1 ) );
-    int promedio, suma, vecinos;
-    for( int i = 0; i < h; ++i )
-        for( int j = 0; j < w; ++j )
-        {
-            promedio = suma = vecinos = 0;
-            for( int k = 0; k < 8; ++k )
-                if( i + X[ k ] >= 0 && i + X[ k ] < h && j + Y[ k ] >= 0 && j + Y[ k ] < w )
-                {
-                    ++vecinos;
-                    suma += dataAt( i + X[ k ], j + Y[ k ] );
-                }
-                promedio = ( int )ceil( suma / ( double )vecinos );
-            if( dataAt( i, j ) == 0xff && promedio < 80 )
-                res.setData( i, j, 0x0 );
-            else if( dataAt( i, j ) == 0xff )
-                res.setData( i, j, 0xff );
-            else
-                res.setData( i, j, 0x0 );
-        }
-    return res;
 }
 
 void frame::drawTextHull( frame &a )
