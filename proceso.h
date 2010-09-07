@@ -41,9 +41,9 @@ class proceso
 
         double kernel[ 4 ][ 9 ];
 
-        int BORDE, frame_num;
+        int frame_num;
 
-        bool DEBUG, RECORD, PROCESAR;
+        bool DEBUG, RECORD;
 
 };
 

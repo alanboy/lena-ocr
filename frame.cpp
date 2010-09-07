@@ -145,9 +145,9 @@ frame frame::labeling( int min, int max )
     findContours( resource, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
     std::cerr << "Se encontraron " << contours.size() << " grupos de componentes\n";
     std::sort( contours.begin(), contours.end(), comparador );
-    while( !contours.empty() && contours[ 0 ].size() < min )
+    while( !contours.empty() && contours[ 0 ].size() < ( unsigned int )min )
         contours.erase( contours.begin() );
-    while( !contours.empty() && contours.back().size() > max )
+    while( !contours.empty() && contours.back().size() > ( unsigned int )max )
         contours.pop_back();
     std::cerr << "Se filtro a " << contours.size() << " grupos de componentes\n";
     Mat tresh( imageSize(), CV_8UC1 );
